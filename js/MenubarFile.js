@@ -2,7 +2,10 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
+import { getBoards, fmsDB } from './db.js';
 import { UIPanel, UIRow } from './libs/ui.js';
+import { Menubar } from './Menubar.js';
+
 
 function MenubarFile( editor ) {
 
@@ -71,21 +74,31 @@ function MenubarFile( editor ) {
 
 	var option = new UIPanel();
 	option.setClass( 'option' );
-	option.setTextContent( 'Export' );
-	option.onClick( Export );
+	option.setTextContent( 'Save' );
+	option.onClick( Save );
 	options.add( option );
 
-	signals.exportState.add( Export );
+	signals.exportState.add( Save );
 
-	function Export () {
+	function Save () {
 
+
+		var filename = editor.getName();
+
+		if (filename === null){
+			filename = prompt("Enter a filename");
+			filename = encodeURI(filename);
+			editor.setName(filename);
+		}
 		var output = JSON.stringify( editor.toJSON(), null, '\t' );
+		var file = {'key': filename, 'value': output}
 
-		var blob = new Blob( [ output ], { type: 'text/plain' } );
-		var objectURL = URL.createObjectURL( blob );
-
-		window.open( objectURL, '_blank' );
-		window.focus();
+		fmsDB.put(file).then(res=> {
+			let menubar = document.getElementById("menubar");
+			menubar.remove();
+			menubar = new Menubar(editor);
+			document.body.appendChild(menubar.dom);
+		})
 
 	}
 

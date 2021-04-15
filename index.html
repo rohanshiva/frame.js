@@ -1,206 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>frame.js / editor</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="manifest" href="manifest.json">
-	</head>
-	<body ontouchstart="">
-		<link href="./css/main.css" rel="stylesheet" />
-		<link id="theme" href="./css/dark.css" rel="stylesheet" />
 
-		<link rel="stylesheet" href="./js/libs/codemirror/codemirror.css">
-		<link rel="stylesheet" href="./js/libs/codemirror/theme/monokai.css">
-		<script src="./js/libs/codemirror/codemirror.js"></script>
-		<script src="./js/libs/codemirror/mode/javascript.js"></script>
+<head>
+	<title>frame.js / editor</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="manifest" href="manifest.json">
+</head>
 
-		<link rel="stylesheet" href="./js/libs/codemirror/addon/dialog/dialog.css">
-		<link rel="stylesheet" href="./js/libs/codemirror/addon/search/matchesonscrollbar.css">
-		<script src="./js/libs/codemirror/addon/dialog/dialog.js"></script>
-		<script src="./js/libs/codemirror/addon/search/searchcursor.js"></script>
-		<script src="./js/libs/codemirror/addon/search/search.js"></script>
-		<script src="./js/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
-		<script src="./js/libs/codemirror/addon/search/matchesonscrollbar.js"></script>
-		<script src="./js/libs/codemirror/addon/search/jump-to-line.js"></script>
+<body ontouchstart="">
+	<link href="./css/main.css" rel="stylesheet" />
+	<link id="theme" href="./css/dark.css" rel="stylesheet" />
 
-		<script src="./js/libs/signals.min.js"></script>
+	<link rel="stylesheet" href="./js/libs/codemirror/codemirror.css">
+	<link rel="stylesheet" href="./js/libs/codemirror/theme/monokai.css">
+	<script src="./js/libs/codemirror/codemirror.js"></script>
+	<script src="./js/libs/codemirror/mode/javascript.js"></script>
 
-		<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.6/dist/ffmpeg.min.js" defer></script>
+	<link rel="stylesheet" href="./js/libs/codemirror/addon/dialog/dialog.css">
+	<link rel="stylesheet" href="./js/libs/codemirror/addon/search/matchesonscrollbar.css">
+	<script src="./js/libs/codemirror/addon/dialog/dialog.js"></script>
+	<script src="./js/libs/codemirror/addon/search/searchcursor.js"></script>
+	<script src="./js/libs/codemirror/addon/search/search.js"></script>
+	<script src="./js/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
+	<script src="./js/libs/codemirror/addon/search/matchesonscrollbar.js"></script>
+	<script src="./js/libs/codemirror/addon/search/jump-to-line.js"></script>
+	<script src="deta.js"></script>
+	<script src="./js/libs/signals.min.js"></script>
 
-		<script type="module">
+	<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.6/dist/ffmpeg.min.js" defer></script>
 
-			import { Editor } from './js/Editor.js';
-			import { Viewport } from './js/Viewport.js';
-			import { Code } from './js/Code.js';
-			import { Sidebar } from './js/Sidebar.js';
-			import { Controls } from './js/Controls.js';
-			import { Timeline } from './js/Timeline.js';
-			import { Menubar } from './js/Menubar.js';
+	<script type="module">
 
-			var editor = new Editor();
+		import { Editor } from './js/Editor.js';
+		import { Viewport } from './js/Viewport.js';
+		import { Code } from './js/Code.js';
+		import { Sidebar } from './js/Sidebar.js';
+		import { Controls } from './js/Controls.js';
+		import { Timeline } from './js/Timeline.js';
+		import { Menubar } from './js/Menubar.js';
+		import { getBoards, fmsDB } from './js/db.js'
+		var editor = new Editor();
 
-			var viewport = new Viewport( editor );
-			document.body.appendChild( viewport.dom );
 
-			var code = new Code( editor );
-			document.body.appendChild( code.dom );
 
-			var sidebar = new Sidebar( editor );
-			document.body.appendChild( sidebar.dom );
+		var viewport = new Viewport(editor);
+		document.body.appendChild(viewport.dom);
 
-			var controls = new Controls( editor );
-			document.body.appendChild( controls.dom );
+		var code = new Code(editor);
+		document.body.appendChild(code.dom);
 
-			var timeline = new Timeline( editor );
-			document.body.appendChild( timeline.dom );
+		var sidebar = new Sidebar(editor);
+		document.body.appendChild(sidebar.dom);
 
-			var menubar = new Menubar( editor );
-			document.body.appendChild( menubar.dom );
+		var controls = new Controls(editor);
+		document.body.appendChild(controls.dom);
 
-			// LocalStorage
+		var timeline = new Timeline(editor);
+		document.body.appendChild(timeline.dom);
 
-			editor.signals.animationAdded.add( saveState );
-			editor.signals.animationModified.add( saveState );
-			editor.signals.animationRemoved.add( saveState );
-			editor.signals.animationRenamed.add( saveState );
-			editor.signals.effectCompiled.add( saveState );
-			editor.signals.effectRenamed.add( saveState );
-			editor.signals.scriptChanged.add( saveState );
-			editor.signals.scriptRemoved.add( saveState );
-			editor.signals.editorCleared.add( saveState );
+		var menubar = new Menubar(editor);
+		document.body.appendChild(menubar.dom);
 
-			var timeout;
+		// LocalStorage
 
-			function saveState() {
+		editor.signals.animationAdded.add(saveState);
+		editor.signals.animationModified.add(saveState);
+		editor.signals.animationRemoved.add(saveState);
+		editor.signals.animationRenamed.add(saveState);
+		editor.signals.effectCompiled.add(saveState);
+		editor.signals.effectRenamed.add(saveState);
+		editor.signals.scriptChanged.add(saveState);
+		editor.signals.scriptRemoved.add(saveState);
+		editor.signals.editorCleared.add(saveState);
 
-				clearTimeout( timeout );
+		var timeout;
 
-				timeout = setTimeout( function () {
+		function saveState() {
 
-					editor.config.setKey( 'state', JSON.stringify( editor.toJSON() ) );
+				clearTimeout(timeout);
 
-				}, 1000 );
+				timeout = setTimeout(function () {
+					editor.config.setKey('state', JSON.stringify(editor.toJSON()));
+					
+				}, 1000);
+
+		}
+
+		//
+
+		var state = editor.config.getKey('state');
+
+		if (state !== undefined) {
+
+			editor.fromJSON(JSON.parse(state));
+
+		}
+
+		// Short-cuts
+
+		document.addEventListener('keydown', function (event) {
+
+			if (event.metaKey || event.ctrlKey) {
+
+				switch (event.keyCode) {
+					case 83: // prevent CMD + S
+						event.preventDefault();
+						break;
+					case 69: // CMD + E to export
+						event.preventDefault();
+						editor.signals.exportState.dispatch();
+						break;
+				}
+
+				return;
 
 			}
 
-			//
+			switch (event.keyCode) {
 
-			var state = editor.config.getKey( 'state' );
-
-			if ( state !== undefined ) {
-
-				editor.fromJSON( JSON.parse( state ) );
+				case 8: // prevent browser back
+					event.preventDefault();
+					break;
+				case 32:
+					editor.player.isPlaying ? editor.stop() : editor.play();
+					break;
+				case 37:
+					event.preventDefault();
+					editor.setTime(editor.player.currentTime - editor.player.playbackRate);
+					break;
+				case 39:
+					event.preventDefault();
+					editor.setTime(editor.player.currentTime + editor.player.playbackRate);
+					break;
+				case 38:
+					event.preventDefault();
+					editor.speedUp();
+					break;
+				case 40:
+					event.preventDefault();
+					editor.speedDown();
+					break;
+				case 83:
+					break;
 
 			}
 
-			// Short-cuts
+		});
 
-			document.addEventListener( 'keydown', function ( event ) {
+		// Drop
 
-				if ( event.metaKey || event.ctrlKey ) {
+		document.addEventListener('dragover', function (event) {
 
-					switch ( event.keyCode ) {
-						case 83: // prevent CMD + S
-							event.preventDefault();
-							break;
-						case 69: // CMD + E to export
-							event.preventDefault();
-							editor.signals.exportState.dispatch();
-							break;
+			event.preventDefault();
+			event.dataTransfer.dropEffect = 'copy';
+
+		}, false);
+
+		document.addEventListener('drop', function (event) {
+
+			event.preventDefault();
+
+			if (event.dataTransfer.files.length > 0) {
+
+				var reader = new FileReader();
+				reader.addEventListener('load', function (event) {
+
+					if (confirm('Any unsaved data will be lost. Are you sure?')) {
+
+						editor.clear();
+						editor.fromJSON(JSON.parse(event.target.result));
+
 					}
 
-					return;
+				}, false);
+				reader.readAsText(event.dataTransfer.files[0]);
 
-				}
+			}
 
-				switch ( event.keyCode ) {
+		}, false);
 
-					case 8: // prevent browser back
-						event.preventDefault();
-						break;
-					case 32:
-						editor.player.isPlaying ? editor.stop() : editor.play();
-						break;
-					case 37:
-						event.preventDefault();
-						editor.setTime( editor.player.currentTime - editor.player.playbackRate );
-						break;
-					case 39:
-						event.preventDefault();
-						editor.setTime( editor.player.currentTime + editor.player.playbackRate );
-						break;
-					case 38:
-						event.preventDefault();
-						editor.speedUp();
-						break;
-					case 40:
-						event.preventDefault();
-						editor.speedDown();
-						break;
-					case 83:
-						break;
 
-				}
-
-			} );
-
-			// Drop
-
-			document.addEventListener( 'dragover', function ( event ) {
-
-				event.preventDefault();
-				event.dataTransfer.dropEffect = 'copy';
-
-			}, false );
-
-			document.addEventListener( 'drop', function ( event ) {
-
-				event.preventDefault();
-
-				if ( event.dataTransfer.files.length > 0 ) {
-
-					var reader = new FileReader();
-					reader.addEventListener( 'load', function ( event ) {
-
-						if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
-
-							editor.clear();
-							editor.fromJSON( JSON.parse( event.target.result ) );
-
-						}
-
-					}, false );
-					reader.readAsText( event.dataTransfer.files[ 0 ] );
-
-				}
-
-			}, false );
-
-			//
-
-			window.addEventListener( 'resize', function () {
-
-				editor.signals.windowResized.dispatch();
-
-			} );
+		window.addEventListener('resize', function () {
 
 			editor.signals.windowResized.dispatch();
 
-			// ServiceWorker
+		});
 
-			if ( 'serviceWorker' in navigator ) {
+		editor.signals.windowResized.dispatch();
 
-				try {
+		// ServiceWorker
 
-					navigator.serviceWorker.register( 'sw.js' );
+		if ('serviceWorker' in navigator) {
 
-				} catch ( error ) {
+			try {
 
-				}
+				navigator.serviceWorker.register('sw.js');
+
+			} catch (error) {
 
 			}
 
-		</script>
-	</body>
+		}
+
+	</script>
+</body>
+
 </html>

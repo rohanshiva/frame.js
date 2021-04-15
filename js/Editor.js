@@ -12,7 +12,6 @@ function Editor() {
 	this.signals = {
 
 		editorCleared: new Signal(),
-
 		// scripts
 
 		scriptAdded: new Signal(),
@@ -20,6 +19,9 @@ function Editor() {
 		scriptChanged: new Signal(),
 		scriptRemoved: new Signal(),
 		scriptsCleared: new Signal(),
+
+		//name 
+		nameAdded: new Signal(),
 
 		// effects
 
@@ -59,6 +61,7 @@ function Editor() {
 
 	this.config = new Config();
 
+	this.name = null;
 	this.player = new Player();
 	this.resources = new Resources();
 
@@ -144,6 +147,14 @@ function Editor() {
 };
 
 Editor.prototype = {
+	getName: function() {
+		return this.name;
+	},
+
+	setName: function(name) {
+		this.name = name;
+		this.signals.nameAdded.dispatch(true);
+	},
 
 	play: function () {
 
@@ -421,7 +432,7 @@ Editor.prototype = {
 
 		this.scripts = [];
 		this.effects = [];
-
+		this.name = null;
 		while ( this.timeline.animations.length > 0 ) {
 
 			this.removeAnimation( this.timeline.animations[ 0 ] );
@@ -436,8 +447,13 @@ Editor.prototype = {
 
 	fromJSON: async function ( json ) {
 
-		var scope = this;
 
+		var scope = this;
+		if (json.name !== null && json.name !== undefined) {
+			this.name = json.name
+		} else {
+			this.name = null
+		}
 		var scripts = json.scripts;
 
 		for ( var i = 0, l = scripts.length; i < l; i ++ ) {
@@ -494,7 +510,6 @@ Editor.prototype = {
 			await scope.addAnimation( new Animation( data ) );
 
 		}
-
 		scope.setTime( 0 );
 
 	},
@@ -506,7 +521,8 @@ Editor.prototype = {
 			"scripts": [],
 			"effects": [],
 			// "curves": [],
-			"animations": []
+			"animations": [],
+			"name":"",
 		};
 
 		/*
@@ -560,6 +576,7 @@ Editor.prototype = {
 
 		}
 
+		json.name = this.name;
 		return json;
 
 	}
